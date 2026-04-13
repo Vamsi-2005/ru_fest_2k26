@@ -52,11 +52,11 @@ const Countdown = () => {
         border border-white/10
         shadow-lg
         
-        w-[50px] h-[50px]        /* 📱 Mobile */
+        w-[70px] h-[70px]        /* 📱 Mobile */
         sm:w-24 sm:h-24
         md:w-32 md:h-32
         
-        rounded-lg
+        rounded-xl
         
         transform transition duration-300 ease-in-out
         group-hover:scale-105 group-hover:-translate-y-1
@@ -66,7 +66,7 @@ const Countdown = () => {
         <span
           className={`
             font-bold
-            text-lg sm:text-2xl md:text-4xl   /* adjusted for 50px */
+            text-xl sm:text-2xl md:text-4xl   /* adjusted */
             transition-colors duration-500
             ${colors[colorIndex]}
           `}
@@ -75,7 +75,7 @@ const Countdown = () => {
         </span>
 
         {/* Label */}
-        <span className="text-[8px] sm:text-xs text-gray-400 mt-[2px]">
+        <span className="text-[9px] sm:text-xs text-gray-400 mt-[3px] tracking-wide">
           {label}
         </span>
       </div>
@@ -87,6 +87,7 @@ const Countdown = () => {
       id="events"
       className="bg-[#020617] py-14 text-center relative overflow-hidden"
     >
+      {/* Background glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-purple-500 opacity-10 blur-3xl"></div>
 
       <h2
@@ -99,11 +100,11 @@ const Countdown = () => {
         Event Starts In
       </h2>
 
-      <div className="flex justify-center gap-2 sm:gap-4 flex-wrap">
+      <div className="flex justify-center gap-3 sm:gap-4 flex-wrap">
         <TimeBox value={days} label="Days" />
         <TimeBox value={hours} label="Hours" />
-        <TimeBox value={minutes} label="Min" />
-        <TimeBox value={seconds} label="Sec" />
+        <TimeBox value={minutes} label="Minutes" />
+        <TimeBox value={seconds} label="Seconds" />
       </div>
     </section>
   );
