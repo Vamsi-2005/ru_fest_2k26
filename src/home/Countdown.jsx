@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 
 const Countdown = () => {
-  const targetDate = new Date("2026-04-16T00:00:00").getTime();
+  // ✅ Stops at April 17, 12:00 AM
+  const targetDate = new Date("2026-04-17T00:00:00").getTime();
 
   const [timeLeft, setTimeLeft] = useState(
     targetDate - new Date().getTime()
@@ -20,23 +21,25 @@ const Countdown = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date().getTime();
-      setTimeLeft(targetDate - now);
-      setColorIndex((prev) => (prev + 1) % colors.length);
+      const diff = targetDate - now;
+
+      // ✅ Stop at 0 (no negative values)
+      if (diff <= 0) {
+        setTimeLeft(0);
+        clearInterval(timer);
+      } else {
+        setTimeLeft(diff);
+        setColorIndex((prev) => (prev + 1) % colors.length);
+      }
     }, 1000);
 
     return () => clearInterval(timer);
   }, []);
 
-  const days = Math.max(0, Math.floor(timeLeft / (1000 * 60 * 60 * 24)));
-  const hours = Math.max(
-    0,
-    Math.floor((timeLeft / (1000 * 60 * 60)) % 24)
-  );
-  const minutes = Math.max(
-    0,
-    Math.floor((timeLeft / (1000 * 60)) % 60)
-  );
-  const seconds = Math.max(0, Math.floor((timeLeft / 1000) % 60));
+  const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
+  const seconds = Math.floor((timeLeft / 1000) % 60);
 
   const TimeBox = ({ value, label }) => (
     <div className="group relative">
@@ -62,11 +65,10 @@ const Countdown = () => {
         group-hover:scale-105 group-hover:-translate-y-1
       "
       >
-        {/* Number */}
         <span
           className={`
             font-bold
-            text-xl sm:text-2xl md:text-4xl   /* adjusted */
+            text-xl sm:text-2xl md:text-4xl
             transition-colors duration-500
             ${colors[colorIndex]}
           `}
@@ -74,8 +76,7 @@ const Countdown = () => {
           {value}
         </span>
 
-        {/* Label */}
-        <span className="text-[9px] sm:text-xs text-gray-400 mt-[3px] tracking-wide">
+        <span className="text-[9px] sm:text-xs text-gray-400 mt-[3px]">
           {label}
         </span>
       </div>
