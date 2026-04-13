@@ -52,21 +52,21 @@ const Countdown = () => {
         border border-white/10
         shadow-lg
         
-        w-[80px] h-[80px]
+        w-[50px] h-[50px]        /* 📱 Mobile */
         sm:w-24 sm:h-24
         md:w-32 md:h-32
         
-        rounded-xl
+        rounded-lg
         
         transform transition duration-300 ease-in-out
         group-hover:scale-105 group-hover:-translate-y-1
       "
       >
-        {/* 🔥 Bigger number on mobile */}
+        {/* Number */}
         <span
           className={`
             font-bold
-            text-2xl sm:text-2xl md:text-4xl   /* ✅ Increased mobile size */
+            text-lg sm:text-2xl md:text-4xl   /* adjusted for 50px */
             transition-colors duration-500
             ${colors[colorIndex]}
           `}
@@ -74,7 +74,8 @@ const Countdown = () => {
           {value}
         </span>
 
-        <span className="text-[10px] sm:text-xs text-gray-400 mt-1 tracking-wide">
+        {/* Label */}
+        <span className="text-[8px] sm:text-xs text-gray-400 mt-[2px]">
           {label}
         </span>
       </div>
@@ -98,11 +99,11 @@ const Countdown = () => {
         Event Starts In
       </h2>
 
-      <div className="flex justify-center gap-4 flex-wrap">
+      <div className="flex justify-center gap-2 sm:gap-4 flex-wrap">
         <TimeBox value={days} label="Days" />
         <TimeBox value={hours} label="Hours" />
-        <TimeBox value={minutes} label="Minutes" />
-        <TimeBox value={seconds} label="Seconds" />
+        <TimeBox value={minutes} label="Min" />
+        <TimeBox value={seconds} label="Sec" />
       </div>
     </section>
   );
