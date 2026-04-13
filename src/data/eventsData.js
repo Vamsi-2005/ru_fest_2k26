@@ -12,8 +12,8 @@ const events = [
     title: "Poster Presentation",
     desc: "Showcase your ideas through creative posters.",
     details:
-      "Poster presentation lo participants oka topic ni visual format lo explain chestaru using charts and images. Creativity mariyu clarity main focus ga untayi. Idi communication skills ni improve cheyadaniki manchi avakasam.",
-    date: "April 16, 2026",
+      "In a poster presentation, participants explain a topic in a visual format using charts and images. Creativity and clarity are the main focus. It is a great opportunity to improve communication skills.",
+    date: "April 17, 2026",
     location: "Room no:102",
     image: img1,
 
@@ -45,8 +45,8 @@ const events = [
     title: "Paper Presentation",
     desc: "Present innovative technical ideas.",
     details:
-      "Paper presentation lo students research-based topic ni slides dwara present chestaru. Technical knowledge mariyu explanation clarity chala important. Idi presentation mariyu academic skills ni enhance chestundi.",
-    date: "April 16, 2026",
+      "In a paper presentation, students present a research-based topic using slides. Technical knowledge and clear explanation are very important. It helps enhance presentation and academic skills.",
+    date: "April 17, 2026",
     location: "Room no:102",
     image: img2,
 
@@ -71,8 +71,8 @@ const events = [
     title: "Hackathon",
     desc: "Build real-world projects.",
     details:
-      "Hackathon lo teams kalisi real-world problems ki solutions develop chestaru within limited time. Coding mariyu innovation key role play chestayi.",
-    date: "April 16, 2026",
+      "In a hackathon, teams work together to develop solutions for real-world problems within a limited time. Coding and innovation play a key role. It improves teamwork and problem-solving skills.",
+    date: "April 17, 2026",
     location: "Lab",
     image: img3,
 
@@ -95,8 +95,8 @@ const events = [
     title: "Technical Quiz",
     desc: "Test your knowledge.",
     details:
-      "Technical quiz lo technology related questions dwara knowledge ni test chestaru. Speed mariyu accuracy important.",
-    date: "April 16, 2026",
+      "In a technical quiz, participants are tested on technology-related questions. Speed and accuracy are important across different rounds. It makes learning fun and competitive.",
+    date: "April 17, 2026",
     location: "Seminar Hall",
     image: img4,
 
@@ -120,8 +120,8 @@ const events = [
     title: "Speed Typo",
     desc: "Test typing speed.",
     details:
-      "Speed typo lo participants fast ga typing cheyyali with high accuracy. Typing efficiency improve avutundi.",
-    date: "April 16, 2026",
+      "In speed typing, participants must type fast with high accuracy. The main goal is to complete the given text within a time limit. It helps improve typing speed and efficiency.",
+    date: "April 17, 2026",
     location: "New Computer Lab",
     image: img5,
 
@@ -144,8 +144,8 @@ const events = [
     title: "Web Expo",
     desc: "Showcase web projects.",
     details:
-      "Webexpo lo participants websites design chesi present chestaru. UI/UX mariyu functionality evaluate chestaru.",
-    date: "April 16, 2026",
+      "In a web expo, participants design and present websites creatively. UI/UX and functionality are evaluated. It is a great platform to showcase web development skills.",
+    date: "April 17, 2026",
     location: "Old Computer Lab",
     image: img6,
 
@@ -168,8 +168,8 @@ const events = [
     title: "Group Discussion",
     desc: "Group discussion.",
     details:
-      "Group discussion lo participants oka topic mida ideas share chestaru. Communication mariyu confidence important.",
-    date: "April 16, 2026",
+      "In a group discussion, participants share and discuss ideas on a given topic. Communication and confidence are very important. It helps develop leadership and thinking skills.",
+    date: "April 17, 2026",
     location: "Conference Hal",
     image: img7,
 
