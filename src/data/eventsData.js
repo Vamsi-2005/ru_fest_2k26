@@ -14,7 +14,7 @@ const events = [
     details:
       "In a poster presentation, participants explain a topic in a visual format using charts and images. Creativity and clarity are the main focus. It is a great opportunity to improve communication skills.",
     date: "April 17, 2026",
-    location: "Room no:102",
+    location: "Room no: 102",
     image: img1,
 
     rules: [
@@ -47,7 +47,7 @@ const events = [
     details:
       "In a paper presentation, students present a research-based topic using slides. Technical knowledge and clear explanation are very important. It helps enhance presentation and academic skills.",
     date: "April 17, 2026",
-    location: "Room no:102",
+    location: "Room no: 103",
     image: img2,
 
     rules: [
@@ -170,7 +170,7 @@ const events = [
     details:
       "In a group discussion, participants share and discuss ideas on a given topic. Communication and confidence are very important. It helps develop leadership and thinking skills.",
     date: "April 17, 2026",
-    location: "Conference Hal",
+    location: "Conference Hall",
     image: img7,
 
     rules: [

@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import logo from "../assets/images/RU-logo.png";
 
 const eventsList = [
   "Poster Presentation",
@@ -11,22 +14,25 @@ const eventsList = [
   "Group Discussion",
 ];
 
-const AdminDashboard = () => {
+export default function AdminDashboard() {
   const [selectedEvent, setSelectedEvent] = useState(eventsList[0]);
   const [data, setData] = useState([]);
+  const [openSidebar, setOpenSidebar] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const [form, setForm] = useState({
+  const emptyForm = {
     name: "",
     roll: "",
     phone: "",
     event: "",
     team_size: 1,
     members: [],
-  });
+  };
 
-  // 🔥 FETCH DATA
+  const [form, setForm] = useState(emptyForm);
+
+  // FETCH
   const fetchData = async () => {
     const { data } = await supabase
       .from("registrations")
@@ -40,30 +46,40 @@ const AdminDashboard = () => {
     fetchData();
   }, [selectedEvent]);
 
-  const totalCount = data.length;
-
-  // 👥 TEAM SIZE
+  // TEAM SIZE
   const handleTeamSize = (size) => {
     const members = Array.from({ length: size - 1 }, () => ({
       name: "",
       roll: "",
     }));
 
-    setForm({
-      ...form,
+    setForm((prev) => ({
+      ...prev,
       team_size: size,
       members,
+    }));
+  };
+
+  // INPUT CHANGE
+  const handleChange = (field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  // MEMBER CHANGE
+  const handleMemberChange = (index, field, value) => {
+    setForm((prev) => {
+      const updated = [...prev.members];
+      updated[index] = { ...updated[index], [field]: value };
+      return { ...prev, members: updated };
     });
   };
 
-  // ➕ ADD
+  // ADD
   const handleAdd = async (e) => {
     e.preventDefault();
-
-    if (!form.event) {
-      alert("Select event ❌");
-      return;
-    }
 
     await supabase.from("registrations").insert([form]);
 
@@ -72,267 +88,206 @@ const AdminDashboard = () => {
     setTimeout(() => {
       setSuccess(false);
       setShowForm(false);
-    }, 2000);
+    }, 1500);
 
-    setForm({
-      name: "",
-      roll: "",
-      phone: "",
-      event: "",
-      team_size: 1,
-      members: [],
-    });
-
+    setForm(emptyForm);
     fetchData();
   };
 
-  // ❌ DELETE
+  // DELETE
   const handleDelete = async (id) => {
     await supabase.from("registrations").delete().eq("id", id);
     fetchData();
   };
 
-  // 📤 EXPORT CSV
-  const handleExport = () => {
-    const csv = [
-      ["Name", "Roll", "Phone", "Event", "Team", "Members"],
-      ...data.map((u) => [
-        u.name,
-        u.roll,
-        u.phone,
-        u.event,
-        u.team_size,
-        (u.members || [])
-          .map((m) => `${m.name}(${m.roll})`)
-          .join("|"),
-      ]),
-    ]
-      .map((r) => r.join(","))
-      .join("\n");
+  // EXPORT PDF
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
 
-    const blob = new Blob([csv]);
-    const url = URL.createObjectURL(blob);
+    doc.addImage(logo, "PNG", 10, 10, 20, 20);
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${selectedEvent}.csv`;
-    a.click();
+    doc.setFont("times", "bold");
+    doc.setFontSize(18);
+    doc.text("RAYALASEEMA UNIVERSITY", pageWidth / 2, 18, { align: "center" });
+
+    doc.setFontSize(12);
+    doc.text("COLLEGE OF ENGINEERING - 518007", pageWidth / 2, 25, {
+      align: "center",
+    });
+
+    doc.line(10, 30, pageWidth - 10, 30);
+
+    doc.text(`${selectedEvent} Registrations`, pageWidth / 2, 38, {
+      align: "center",
+    });
+
+    const tableData = data.map((u, i) => [
+      i + 1,
+      u.name,
+      u.roll,
+      u.phone,
+      u.team_size,
+      (u.members || []).map(m => `${m.name}(${m.roll})`).join(", "),
+    ]);
+
+    autoTable(doc, {
+      startY: 45,
+      head: [["#", "Name", "Roll", "Phone", "Team", "Members"]],
+      body: tableData,
+      margin: { left: 10, right: 10 },
+      styles: { fontSize: 10 },
+    });
+
+    doc.save(`${selectedEvent}.pdf`);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 pt-20 flex">
+    <div className="min-h-screen bg-gray-100 pt-[80px] flex overflow-x-hidden">
 
-      {/* SIDEBAR (Desktop) */}
-      <div className="hidden md:block w-64 bg-white shadow p-4">
-        <h2 className="text-xl font-bold mb-4">Events</h2>
+      {/* OVERLAY */}
+      {openSidebar && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40"
+          onClick={() => setOpenSidebar(false)}
+        />
+      )}
 
-        {eventsList.map((event, i) => (
-          <div
-            key={i}
-            onClick={() => setSelectedEvent(event)}
-            className={`p-3 rounded-lg mb-2 cursor-pointer transition 
-            ${
-              selectedEvent === event
+      {/* SIDEBAR */}
+      <div
+        className={`fixed md:static top-[80px] left-0 h-[calc(100%-80px)] w-64 bg-white shadow z-50
+        transform transition duration-300
+        ${openSidebar ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
+      >
+        <div className="p-4 overflow-y-auto h-full">
+          <h2 className="font-bold mb-4">Events</h2>
+
+          {eventsList.map((e, i) => (
+            <div
+              key={i}
+              onClick={() => {
+                setSelectedEvent(e);
+                setOpenSidebar(false);
+              }}
+              className={`p-3 mb-2 rounded cursor-pointer
+              ${selectedEvent === e
                 ? "bg-blue-500 text-white"
-                : "hover:bg-gray-200"
-            }`}
-          >
-            {event}
-          </div>
-        ))}
+                : "hover:bg-gray-200"}`}
+            >
+              {e}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* MAIN */}
-      <div className="flex-1 p-4 md:p-6">
+      <div className="flex-1 md:ml-64 px-4 w-full overflow-hidden">
 
-        {/* HEADER */}
-        <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+        {/* TOP BAR */}
+        <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
 
-          {/* MOBILE EVENT SELECT */}
-          <select
-            value={selectedEvent}
-            onChange={(e) => setSelectedEvent(e.target.value)}
-            className="md:hidden p-3 border rounded-xl bg-white"
+          <button
+            onClick={() => setOpenSidebar(true)}
+            className="md:hidden bg-blue-500 text-white px-3 py-2 rounded"
           >
-            {eventsList.map((ev, i) => (
-              <option key={i}>{ev}</option>
-            ))}
-          </select>
+            ☰
+          </button>
 
-          {/* TITLE + COUNT */}
-          <h1 className="hidden md:flex items-center gap-3 font-bold text-lg">
-            {selectedEvent}
-            <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm">
-              {totalCount} Registered
-            </span>
+          <h1 className="font-bold text-lg">
+            {selectedEvent} ({data.length})
           </h1>
 
-          {/* BUTTONS */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button
               onClick={() => setShowForm(true)}
-              className="bg-green-500 text-white px-4 py-2 rounded-xl hover:scale-105 transition"
+              className="bg-green-500 text-white px-4 py-2 rounded"
             >
-              + Add
+              Add
             </button>
 
             <button
-              onClick={handleExport}
-              className="bg-yellow-400 px-4 py-2 rounded-xl hover:scale-105 transition"
+              onClick={handleExportPDF}
+              className="bg-purple-600 text-white px-4 py-2 rounded"
             >
-              Export
+              Export PDF
             </button>
           </div>
-
         </div>
 
-        {/* MOBILE COUNT */}
-        <p className="md:hidden text-center font-semibold mb-2">
-          {selectedEvent} — {totalCount} Registered
-        </p>
-
         {/* CARDS */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
           {data.map((u) => (
             <div
               key={u.id}
-              className="bg-white p-4 rounded-2xl border shadow 
-              flex flex-col justify-between min-h-[220px]
-              hover:shadow-xl hover:-translate-y-1 transition"
+              className="bg-white p-4 rounded-2xl shadow-md 
+              transition duration-300 ease-in-out
+              hover:-translate-y-1 hover:scale-[1.02] hover:shadow-xl break-words"
             >
+              <p><b>Name:</b> {u.name}</p>
+              <p><b>Roll:</b> {u.roll}</p>
+              <p><b>Phone:</b> {u.phone}</p>
+              <p><b>Team:</b> {u.team_size}</p>
 
-              <div className="text-sm space-y-1">
-                <p><b>Name:</b> {u.name}</p>
-                <p><b>Roll:</b> {u.roll}</p>
-                <p><b>Phone:</b> {u.phone}</p>
-                <p><b>Team:</b> {u.team_size}</p>
+              {u.members?.length > 0 && (
+                <p className="text-sm break-words mt-1">
+                  <b>Members:</b>{" "}
+                  {u.members.map(m => `${m.name}(${m.roll})`).join(", ")}
+                </p>
+              )}
 
-                {u.members?.length > 0 && (
-                  <p className="text-xs text-gray-600">
-                    <b>Members:</b>{" "}
-                    {u.members.map((m) => `${m.name}(${m.roll})`).join(", ")}
-                  </p>
-                )}
-              </div>
-
-              {/* ONLY DELETE BUTTON */}
-              <div className="flex justify-center mt-3">
-                <button
-                  onClick={() => handleDelete(u.id)}
-                  className="bg-red-500 text-white px-3 py-1 text-xs rounded-lg hover:scale-110 transition"
-                >
-                  Delete
-                </button>
-              </div>
-
+              <button
+                onClick={() => handleDelete(u.id)}
+                className="mt-3 bg-red-500 text-white px-3 py-1 rounded-lg 
+                hover:bg-red-600 transition"
+              >
+                Delete
+              </button>
             </div>
           ))}
 
         </div>
-
       </div>
 
-      {/* FORM MODAL */}
+      {/* FORM */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
 
-          <div className="bg-white w-full max-w-xl mx-3 p-5 rounded-xl">
+          <div className="bg-white w-[90%] md:max-w-xl p-5 rounded">
 
             <h2 className="font-bold mb-3">Add Registration</h2>
 
             {success && (
-              <div className="bg-green-500 text-white p-2 rounded mb-3 animate-pulse text-center">
-                Submitted Successfully ✅
-              </div>
+              <p className="text-green-600 animate-pulse">
+                ✅ Submitted Successfully
+              </p>
             )}
 
             <form onSubmit={handleAdd} className="space-y-3">
 
-              <input
-                placeholder="Name"
-                required
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full p-2 border rounded"
-              />
+              <input value={form.name} onChange={(e)=>handleChange("name", e.target.value)} placeholder="Name" className="w-full p-2 border"/>
+              <input value={form.roll} onChange={(e)=>handleChange("roll", e.target.value)} placeholder="Roll" className="w-full p-2 border"/>
+              <input value={form.phone} onChange={(e)=>handleChange("phone", e.target.value)} placeholder="Phone" className="w-full p-2 border"/>
 
-              <input
-                placeholder="Roll"
-                required
-                value={form.roll}
-                onChange={(e) => setForm({ ...form, roll: e.target.value })}
-                className="w-full p-2 border rounded"
-              />
-
-              <input
-                placeholder="Phone"
-                required
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="w-full p-2 border rounded"
-              />
-
-              <select
-                value={form.event}
-                onChange={(e) => setForm({ ...form, event: e.target.value })}
-                className="w-full p-2 border rounded"
-              >
+              <select value={form.event} onChange={(e)=>handleChange("event", e.target.value)} className="w-full p-2 border">
                 <option value="">Select Event</option>
-                {eventsList.map((e, i) => (
-                  <option key={i}>{e}</option>
-                ))}
+                {eventsList.map((e,i)=><option key={i}>{e}</option>)}
               </select>
 
-              <select
-                value={form.team_size}
-                onChange={(e) => handleTeamSize(Number(e.target.value))}
-                className="w-full p-2 border rounded"
-              >
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <option key={n}>{n}</option>
-                ))}
+              <select value={form.team_size} onChange={(e)=>handleTeamSize(Number(e.target.value))} className="w-full p-2 border">
+                {[1,2,3,4,5].map(n=><option key={n}>{n}</option>)}
               </select>
 
-              {form.team_size > 1 &&
-                form.members.map((m, i) => (
-                  <div key={i} className="grid grid-cols-2 gap-2">
-                    <input
-                      placeholder="Name"
-                      value={m.name}
-                      onChange={(e) => {
-                        const arr = [...form.members];
-                        arr[i].name = e.target.value;
-                        setForm({ ...form, members: arr });
-                      }}
-                      className="p-2 border rounded"
-                    />
-
-                    <input
-                      placeholder="Roll"
-                      value={m.roll}
-                      onChange={(e) => {
-                        const arr = [...form.members];
-                        arr[i].roll = e.target.value;
-                        setForm({ ...form, members: arr });
-                      }}
-                      className="p-2 border rounded"
-                    />
-                  </div>
-                ))}
+              {form.members.map((m,i)=>(
+                <div key={i} className="grid grid-cols-2 gap-2">
+                  <input value={m.name} onChange={(e)=>handleMemberChange(i,"name",e.target.value)} placeholder="Member Name" className="p-2 border"/>
+                  <input value={m.roll} onChange={(e)=>handleMemberChange(i,"roll",e.target.value)} placeholder="Member Roll" className="p-2 border"/>
+                </div>
+              ))}
 
               <div className="flex gap-2">
-                <button className="flex-1 bg-blue-500 text-white py-2 rounded">
-                  Submit
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="flex-1 bg-gray-300 py-2 rounded"
-                >
-                  Cancel
-                </button>
+                <button className="flex-1 bg-blue-500 text-white py-2">Submit</button>
+                <button type="button" onClick={()=>setShowForm(false)} className="flex-1 bg-gray-300 py-2">Cancel</button>
               </div>
 
             </form>
@@ -344,6 +299,4 @@ const AdminDashboard = () => {
 
     </div>
   );
-};
-
-export default AdminDashboard;
+}

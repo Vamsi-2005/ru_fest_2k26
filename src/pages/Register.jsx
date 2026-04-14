@@ -27,26 +27,36 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
 
-  // 🔹 Handle inputs
+  // 🔹 INPUT
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // 🔹 Team members
+  // 🔹 TEAM SIZE CHANGE
+  const handleTeamSize = (size) => {
+    setTeamSize(size);
+
+    const newMembers = Array.from({ length: size - 1 }, () => ({
+      name: "",
+      roll: "",
+    }));
+
+    setMembers(newMembers);
+  };
+
+  // 🔹 MEMBER INPUT
   const handleMemberChange = (index, field, value) => {
     const updated = [...members];
-    updated[index] = {
-      ...updated[index],
-      [field]: value,
-    };
+    updated[index][field] = value;
     setMembers(updated);
   };
 
-  // 🔹 Submit
+  // 🔹 SUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMsg("");
 
+    // BASIC VALIDATION
     if (!form.name || !form.roll || !form.phone || !form.event) {
       setMsg("All fields are required ❌");
       return;
@@ -57,9 +67,15 @@ const Register = () => {
       return;
     }
 
-    const teamMembers = members.filter(
-      (m) => m?.name && m?.roll
-    );
+    // 🔥 TEAM VALIDATION (MAIN FIX)
+    if (teamSize > 1) {
+      for (let i = 0; i < members.length; i++) {
+        if (!members[i].name || !members[i].roll) {
+          setMsg(`Fill all details for Member ${i + 1} ❌`);
+          return;
+        }
+      }
+    }
 
     try {
       setLoading(true);
@@ -73,7 +89,7 @@ const Register = () => {
             phone: form.phone,
             event: form.event,
             team_size: teamSize,
-            members: teamMembers,
+            members: members, // ✅ full members only
           },
         ]);
 
@@ -85,7 +101,7 @@ const Register = () => {
           state: {
             ...form,
             team_size: teamSize,
-            members: teamMembers,
+            members: members,
           },
         });
       }
@@ -101,7 +117,6 @@ const Register = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#020617] to-[#0f172a] flex items-center justify-center px-4 py-10">
 
-      {/* 🔥 CARD */}
       <div className="w-full max-w-3xl bg-white text-black p-6 rounded-3xl shadow-2xl 
       transition duration-500 hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)] 
       hover:scale-[1.01] animate-fadeIn">
@@ -112,45 +127,34 @@ const Register = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
 
-          {/* NAME */}
           <input
             type="text"
             name="name"
             placeholder="Full Name"
             onChange={handleChange}
-            className="w-full p-3 rounded-xl border border-gray-300 
-            focus:ring-2 focus:ring-blue-500 outline-none 
-            transition duration-300 hover:border-blue-400"
+            className="w-full p-3 rounded-xl border"
           />
 
-          {/* ROLL */}
           <input
             type="text"
             name="roll"
             placeholder="Roll Number"
             onChange={handleChange}
-            className="w-full p-3 rounded-xl border border-gray-300 
-            focus:ring-2 focus:ring-blue-500 outline-none 
-            transition duration-300 hover:border-blue-400"
+            className="w-full p-3 rounded-xl border"
           />
 
-          {/* PHONE */}
           <input
             type="number"
             name="phone"
             placeholder="Phone Number"
             onChange={handleChange}
-            className="w-full p-3 rounded-xl border border-gray-300 
-            focus:ring-2 focus:ring-blue-500 outline-none 
-            transition duration-300 hover:border-blue-400"
+            className="w-full p-3 rounded-xl border"
           />
 
-          {/* EVENT */}
           <select
             name="event"
             onChange={handleChange}
-            className="w-full p-3 rounded-xl border border-gray-300 
-            focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full p-3 rounded-xl border"
           >
             <option value="">Select Event</option>
             {eventsList.map((e, i) => (
@@ -161,9 +165,8 @@ const Register = () => {
           {/* TEAM SIZE */}
           <select
             value={teamSize}
-            onChange={(e) => setTeamSize(Number(e.target.value))}
-            className="w-full p-3 rounded-xl border border-gray-300 
-            focus:ring-2 focus:ring-blue-500 outline-none"
+            onChange={(e) => handleTeamSize(Number(e.target.value))}
+            className="w-full p-3 rounded-xl border"
           >
             {[1,2,3,4,5].map((n) => (
               <option key={n} value={n}>
@@ -175,26 +178,24 @@ const Register = () => {
           {/* TEAM MEMBERS */}
           {teamSize > 1 && (
             <div>
-              <p className="text-sm text-gray-600 mb-2">
-                Team Members
-              </p>
+              <p className="text-sm mb-2">Team Members</p>
 
-              {[...Array(teamSize - 1)].map((_, i) => (
+              {members.map((m, i) => (
                 <div key={i} className="grid grid-cols-2 gap-2 mb-2">
 
                   <input
+                    value={m.name}
                     placeholder={`Member ${i + 1} Name`}
-                    className="p-2 rounded-xl border border-gray-300 
-                    focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="p-2 rounded-xl border"
                     onChange={(e) =>
                       handleMemberChange(i, "name", e.target.value)
                     }
                   />
 
                   <input
+                    value={m.roll}
                     placeholder="Roll Number"
-                    className="p-2 rounded-xl border border-gray-300 
-                    focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="p-2 rounded-xl border"
                     onChange={(e) =>
                       handleMemberChange(i, "roll", e.target.value)
                     }
@@ -205,7 +206,7 @@ const Register = () => {
             </div>
           )}
 
-          {/* MESSAGE */}
+          {/* ERROR */}
           {msg && (
             <p className="text-center text-sm text-red-500">
               {msg}
@@ -215,8 +216,8 @@ const Register = () => {
           {/* BUTTON */}
           <button
             disabled={loading}
-            className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white py-3 rounded-xl font-semibold 
-            hover:scale-[1.05] hover:shadow-lg transition duration-300 active:scale-95"
+            className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white py-3 rounded-xl 
+            hover:scale-[1.05] transition"
           >
             {loading ? "Submitting..." : "Complete Registration"}
           </button>
