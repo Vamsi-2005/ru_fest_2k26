@@ -15,8 +15,8 @@ const eventsList = [
 const Register = () => {
   const navigate = useNavigate();
 
-  // 🔥 DEADLINE
-  const deadline = new Date("2026-04-16T18:30:00");
+  // DEADLINE
+  const deadline = new Date("2026-04-16T18:00:00");
 
   const [time, setTime] = useState(new Date());
 
@@ -47,10 +47,12 @@ const Register = () => {
 
   const handleTeamSize = (size) => {
     setTeamSize(size);
+
     const newMembers = Array.from({ length: size - 1 }, () => ({
       name: "",
       roll: "",
     }));
+
     setMembers(newMembers);
   };
 
@@ -67,6 +69,8 @@ const Register = () => {
       setMsg("Registration Closed ❌");
       return;
     }
+
+    setMsg("");
 
     if (!form.name || !form.roll || !form.phone || !form.event) {
       setMsg("All fields are required ❌");
@@ -114,6 +118,7 @@ const Register = () => {
           },
         });
       }
+
     } catch (err) {
       setMsg("Something went wrong ❌");
     } finally {
@@ -122,101 +127,132 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#020617] via-[#0f172a] to-[#020617] flex items-center justify-center px-4 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-[#020617] to-[#0f172a] flex items-center justify-center px-4 py-10 relative">
 
-      <div className="w-full max-w-3xl">
+      {/* ✅ MOBILE FIXED OVERLAY */}
+      {isClosed && (
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 px-4">
 
-        <h1 className="text-3xl font-bold text-center text-white mb-6">
+          <div className="w-full max-w-sm bg-gradient-to-br from-green-500 to-emerald-600 
+          text-white px-6 py-8 rounded-3xl shadow-2xl text-center 
+          animate-pulse">
+
+            <h2 className="text-2xl md:text-3xl font-bold mb-3">
+              🎉 Registration Completed
+            </h2>
+
+            <p className="text-sm opacity-90">
+              Thank you for your interest!  
+              Registrations are now officially closed.
+            </p>
+
+          </div>
+        </div>
+      )}
+
+      {/* FORM */}
+      <div className="w-full max-w-3xl bg-white text-black p-6 rounded-3xl shadow-2xl 
+      transition duration-500 hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)] 
+      hover:scale-[1.01] animate-fadeIn">
+
+        <h1 className="text-2xl font-bold text-center mb-6">
           🎯 Event Registration
         </h1>
 
-        {/* 🔥 PREMIUM CLOSED UI */}
-        {isClosed ? (
-          <div className="flex justify-center">
+        <form onSubmit={handleSubmit} className="space-y-4">
 
-            <div className="relative w-full max-w-md p-[2px] rounded-3xl 
-            bg-gradient-to-r from-green-400 via-emerald-500 to-green-600 animate-pulse">
+          <input
+            type="text"
+            name="name"
+            placeholder="Full Name"
+            onChange={handleChange}
+            className="w-full p-3 rounded-xl border"
+          />
 
-              <div className="bg-[#020617]/80 backdrop-blur-xl p-8 rounded-3xl text-center shadow-2xl">
+          <input
+            type="text"
+            name="roll"
+            placeholder="Roll Number"
+            onChange={handleChange}
+            className="w-full p-3 rounded-xl border"
+          />
 
-                <div className="text-5xl mb-3 animate-bounce">
-                  🎉
-                </div>
+          <input
+            type="number"
+            name="phone"
+            placeholder="Phone Number"
+            onChange={handleChange}
+            className="w-full p-3 rounded-xl border"
+          />
 
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-green-300 to-emerald-500 
-                bg-clip-text text-transparent">
-                  Registration Completed
-                </h2>
+          <select
+            name="event"
+            onChange={handleChange}
+            className="w-full p-3 rounded-xl border"
+          >
+            <option value="">Select Event</option>
+            {eventsList.map((e, i) => (
+              <option key={i}>{e}</option>
+            ))}
+          </select>
 
-                <p className="text-gray-300 mt-2 text-sm">
-                  Thank you for your interest 🚀 <br />
-                  Registrations are now closed.
-                </p>
+          <select
+            value={teamSize}
+            onChange={(e) => handleTeamSize(Number(e.target.value))}
+            className="w-full p-3 rounded-xl border"
+          >
+            {[1,2,3,4,5].map((n) => (
+              <option key={n} value={n}>
+                Team Size: {n}
+              </option>
+            ))}
+          </select>
 
-                <div className="mt-4 text-xs text-gray-400">
-                  See you at Tech Fusion 2K26 💙
-                </div>
+          {teamSize > 1 && (
+            <div>
+              <p className="text-sm mb-2">Team Members</p>
 
-              </div>
+              {members.map((m, i) => (
+                <div key={i} className="grid grid-cols-2 gap-2 mb-2">
 
-            </div>
-
-          </div>
-        ) : (
-          <div className="bg-white text-black p-6 rounded-3xl shadow-2xl">
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-
-              <input name="name" placeholder="Full Name" onChange={handleChange}
-                className="w-full p-3 rounded-xl border" />
-
-              <input name="roll" placeholder="Roll Number" onChange={handleChange}
-                className="w-full p-3 rounded-xl border" />
-
-              <input name="phone" placeholder="Phone Number" onChange={handleChange}
-                className="w-full p-3 rounded-xl border" />
-
-              <select name="event" onChange={handleChange}
-                className="w-full p-3 rounded-xl border">
-                <option value="">Select Event</option>
-                {eventsList.map((e, i) => (
-                  <option key={i}>{e}</option>
-                ))}
-              </select>
-
-              <select value={teamSize}
-                onChange={(e) => handleTeamSize(Number(e.target.value))}
-                className="w-full p-3 rounded-xl border">
-                {[1,2,3,4,5].map((n) => (
-                  <option key={n}>Team Size: {n}</option>
-                ))}
-              </select>
-
-              {teamSize > 1 && members.map((m, i) => (
-                <div key={i} className="grid grid-cols-2 gap-2">
-                  <input placeholder={`Member ${i+1} Name`}
+                  <input
+                    value={m.name}
+                    placeholder={`Member ${i + 1} Name`}
                     className="p-2 rounded-xl border"
-                    onChange={(e)=>handleMemberChange(i,"name",e.target.value)} />
-                  <input placeholder="Roll"
+                    onChange={(e) =>
+                      handleMemberChange(i, "name", e.target.value)
+                    }
+                  />
+
+                  <input
+                    value={m.roll}
+                    placeholder="Roll Number"
                     className="p-2 rounded-xl border"
-                    onChange={(e)=>handleMemberChange(i,"roll",e.target.value)} />
+                    onChange={(e) =>
+                      handleMemberChange(i, "roll", e.target.value)
+                    }
+                  />
+
                 </div>
               ))}
+            </div>
+          )}
 
-              {msg && <p className="text-red-500 text-sm text-center">{msg}</p>}
+          {msg && (
+            <p className="text-center text-sm text-red-500">
+              {msg}
+            </p>
+          )}
 
-              <button
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white py-3 rounded-xl 
-                hover:scale-105 transition duration-300"
-              >
-                {loading ? "Submitting..." : "Complete Registration"}
-              </button>
+          <button
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white py-3 rounded-xl 
+            hover:scale-[1.05] transition"
+          >
+            {loading ? "Submitting..." : "Complete Registration"}
+          </button>
 
-            </form>
-
-          </div>
-        )}
+        </form>
 
       </div>
 
